@@ -1,0 +1,33 @@
+<!-- You can use any js library (: -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="utf-8" />
+</head>
+<body>
+    <header>
+       <h1>Mi sitio web</h1>
+       <p>Mi sitio web creado en html5</p>
+    </header>
+    <h2>Vamos a saludar</h2>
+
+    <table>
+        <tr><th>Name</th><th>Description</th></tr>
+        %for nota in lista:
+            <tr>
+                <td>{{nota.name}} {{nota.description}}</td>
+            </tr>
+        %end
+      
+    </table>
+
+    <li><a href="/create">Create a Note!</a>
+        
+    
+    
+</body>
+</html>
+
+
