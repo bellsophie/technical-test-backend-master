@@ -7,21 +7,19 @@ class User(Model):
     password = TextField(null=False)
 
     class Meta:
-        database = db # This model uses the "people.db" database.
+        database = db 
 
 class Note(Model):
     user = ForeignKeyField(User, to_field='id')
     name = CharField()
     description = CharField()
-    #date = DateField()
 
     class Meta:
-        database = db # This model uses the "people.db" database.
+        database = db 
 
 
 
 def initialize_db():
     db.connect()
     db.create_tables([Note, User], safe = True)
-    #db.drop_tables([Note], safe = True)
     db.close()

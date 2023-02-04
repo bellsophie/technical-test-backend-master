@@ -6,10 +6,10 @@ from schemas import *
 import jwt
 from datetime import datetime, timedelta
 
+
 JWT_SECRET = 'secret'
 JWT_ALGORITHM = 'HS256'
 JWT_EXP_DELTA_SECONDS = 1800 
-
 
 
 # Start your code here, good luck (: ...
@@ -21,6 +21,9 @@ def validate_credentials(email, passw):
      db.close()
      return user
 
+@get('/login')
+def create_button():
+    return template('index.html')
 
 @post('/login')
 def login():
@@ -32,7 +35,7 @@ def login():
         if user:
             payload = {
             'user_id': user.id,
-            'exp': datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS)
+            'exp': int((datetime.utcnow() + timedelta(seconds=JWT_EXP_DELTA_SECONDS)).timestamp()),
             }
             jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
             response.set_cookie("jwtoken",jwt_token, secret=JWT_SECRET)
@@ -56,13 +59,10 @@ def add_user():
         User.create(email=result.data['email'], password=result.data['password'])
         db.close()
         redirect('/login')
-        return HTTPResponse(status=200,
-                            body=template('index.html',
-                                           message='User have been created succefully'))
     except ValidationError as err:
         print(err.messages) 
         return HTTPResponse(status=400,
-                            body=template('index.html',
+                            body=template('create_response.html',
                                            message=err.messages))
 
 
@@ -76,7 +76,12 @@ def create_action():
         result = NoteSchema().load({"name": request.forms.get('name'), "description": request.forms.get('description')})
         jwt_token = request.get_cookie("jwtoken", secret=JWT_SECRET)
         payload = jwt.decode(jwt_token, JWT_SECRET, JWT_ALGORITHM)
-        print(payload)
+        exp = payload['exp'] 
+        if int(datetime.utcnow().timestamp()) > exp:            
+            return HTTPResponse(status=200,
+                            body=template('create_response.html',
+                                           message='Your session have expired'))
+
         db.connect()
         print(result)
         note = Note.create(name=result.data['name'], description=result.data['description'], user = payload['user_id'])
