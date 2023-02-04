@@ -68,6 +68,11 @@ def add_user():
 
 @get('/create')
 def create_button():
+    jwt_token = request.get_cookie("jwtoken", secret=JWT_SECRET)
+    if not jwt_token:      
+        return HTTPResponse(status=200,
+                        body=template('create_response.html',
+                                        message='Unauthorized to use this resource'))
     return template('create.html')
     
 @post('/create')
@@ -75,6 +80,10 @@ def create_action():
     try:
         result = NoteSchema().load({"name": request.forms.get('name'), "description": request.forms.get('description')})
         jwt_token = request.get_cookie("jwtoken", secret=JWT_SECRET)
+        if not jwt_token:      
+            return HTTPResponse(status=200,
+                            body=template('create_response.html',
+                                            message='Unauthorized to use this resource'))
         payload = jwt.decode(jwt_token, JWT_SECRET, JWT_ALGORITHM)
         exp = payload['exp'] 
         if int(datetime.utcnow().timestamp()) > exp:            
@@ -99,7 +108,16 @@ def create_action():
 @get('/findAll')
 def findAll():
     jwt_token = request.get_cookie("jwtoken", secret=JWT_SECRET)
+    if not jwt_token:      
+        return HTTPResponse(status=200,
+                        body=template('create_response.html',
+                                        message='Unauthorized to use this resource'))
     payload = jwt.decode(jwt_token, JWT_SECRET, JWT_ALGORITHM)
+    exp = payload['exp'] 
+    if int(datetime.utcnow().timestamp()) > exp:            
+        return HTTPResponse(status=200,
+                        body=template('create_response.html',
+                                        message='Your session have expired'))
     db.connect()
     result = [n for n in Note.select().where(Note.user == payload['user_id'])]
     db.close()
